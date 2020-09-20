@@ -1,0 +1,5 @@
+{
+  "filter": "key_map",
+  "Key_Enter": "Key_Left",
+  "Key_Space": "Key_Right"
+}

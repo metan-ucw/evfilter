@@ -1,0 +1,28 @@
+ev->type:  EV_KEY
+ev->code:  Key_Left (105)
+ev->value: KEY_DOWN   (1)
+
+ev->type:  EV_KEY
+ev->code:  Key_Right (106)
+ev->value: KEY_DOWN   (1)
+
+ev->type:  EV_KEY
+ev->code:  Key_Leftalt (56)
+ev->value: KEY_DOWN   (1)
+
+ev->type:  EV_SYN
+
+ev->type:  EV_KEY
+ev->code:  Key_Left (105)
+ev->value: KEY_UP     (0)
+
+ev->type:  EV_KEY
+ev->code:  Key_Right (106)
+ev->value: KEY_UP     (0)
+
+ev->type:  EV_KEY
+ev->code:  Key_Leftalt (56)
+ev->value: KEY_UP     (0)
+
+ev->type:  EV_SYN
+

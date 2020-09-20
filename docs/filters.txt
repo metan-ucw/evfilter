@@ -1,0 +1,25 @@
+== List of implemented filters ==
+
+=== barrier ===
+
+This filter implements barrier that holds events until sync event comes. This
+is especially usefull when routing several sources of input events so that
+they are not mixed up.
+
+|================================================================
+| history | unsigned integer | Maximal number of events in queue.
+|================================================================
+
+=== dump ===
+
+This filter writes human readable decomposition of event into file
+(or stdout or strerr). It's usefull for debuging.
+
+|===================================================================
+| prefix | string | Prefix for all lines
+| file   | path   | Path to a file, *stdout* and *stderr* are special
+|====================================================================
+
+=== no_repeat ===
+
+This filter removes all key repeat events.

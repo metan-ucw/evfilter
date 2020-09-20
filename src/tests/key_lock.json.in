@@ -1,0 +1,34 @@
+[
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 0
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 0
+  },
+  {
+    "type": "Sync"
+  }
+]

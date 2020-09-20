@@ -1,0 +1,18 @@
+ev->type:  EV_REL
+ev->code:  REL_Y (1)
+ev->value: 2
+
+ev->type:  EV_SYN
+
+ev->type:  EV_REL
+ev->code:  REL_Y (1)
+ev->value: -2
+
+ev->type:  EV_SYN
+
+ev->type:  EV_KEY
+ev->code:  Key_A (30)
+ev->value: KEY_DOWN   (1)
+
+ev->type:  EV_SYN
+

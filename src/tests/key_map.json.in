@@ -1,0 +1,38 @@
+[
+  {
+    "type": "Key",
+    "code": "Key_Enter",
+    "value": 1
+  },
+  {
+    "type": "Key",
+    "code": "Key_Space",
+    "value": 1
+  },
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_Enter",
+    "value": 0
+  },
+  {
+    "type": "Key",
+    "code": "Key_Space",
+    "value": 0
+  },
+  {
+    "type": "Key",
+    "code": "Key_LeftAlt",
+    "value": 0
+  },
+  {
+    "type": "Sync"
+  }
+]

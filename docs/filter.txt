@@ -1,0 +1,55 @@
+== Filter API ==
+
+This part of documentation describes how filters are implemented.
+
+[source,c]
+-------------------------------------------------------------------------------
+struct evf_filter {
+	const struct evf_filter_ops *ops;
+	struct evf_filter *next;
+	char data[0];
+};
+-------------------------------------------------------------------------------
+
+The *evf_filter* structure is allocated when a new instance of a filter is
+created. The *ops* pointer points to a static structure and the *data* points
+to a filter private data structures.
+
+Filters, for a specific device, are arranged in a linked list by the *next*
+pointer. When events are processed each filter passes, possibly modified,
+events to a 'process()' callback of the *next* filter.
+
+[source,c]
+-------------------------------------------------------------------------------
+struct evf_filter_ops {
+	const char *json_id;
+	struct evf_filter* (*from_json)(json_object *json_data);
+	void (*process)(struct evf_filter *self, struct input_event *ev);
+	void (*free)(struct evf_filter *self);
+	const char *desc;
+};
+-------------------------------------------------------------------------------
+
+Filter is implemented as a set of callbacks.
+
+The *from_json()* callback is used to initialize and allocate filter from a JSON
+configuration. Each filter can be as well allocated from a C call that ends
+with *_alloc()* suffix.
+
+The *json_id* is a filter name that is used to locate correct *from_json()*
+callback when filters are loaded accordingly to the JSON configuration.
+
+The *free()* callback can be used to clean up any additional resources that
+have been allocated. The memory that holds the filter instance itself is freed
+automatically.
+
+The *desc* is a single sentence that describes the filter.
+
+And finally the *process()* callbacks is where events are passed to and
+processed.
+
+[source,c]
+-------------------------------------------------------------------------------
+include::../../src/filters/key_lock.c[]
+-------------------------------------------------------------------------------
+.Filter example

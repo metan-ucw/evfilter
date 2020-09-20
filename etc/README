@@ -1,0 +1,18 @@
+   ___ .   .   ___ . .   ____  ___  __
+  /    |  /  /    / /     /   /    /  /
+ ---   | /  /--  / /     /   ---  /--
+/___   |/  /    / /___  /   /___ /  |
+
+* http://metan.ucw.cz/evfilter/
+
+--------------------------------------
+
+Here you can find example of system profile configuration.
+
+Just in this case it's set to emulate relative pointer from asus eee extra
+buttons. Also it's set to dump these events to stdout.
+
+And slow down relative pointer on /dev/input/event6.
+
+Note that numbering of input devices is not persistive so you can't rely on
+this.

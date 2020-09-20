@@ -1,0 +1,49 @@
+== F.A.Q. ==
+
+=== What is evfilter library? ===
+
+Evfilter library aims to be userspace library for input event filtering.
+Input event layer is linux kernel layer for all HID and other human interface
+devices connected to the computer. Evfilter library is transparent layer
+between you and kernel that can modify these events.
+
+
+=== How are events filtered/modified? ===
+
+Evfilter library implements filter api. Filter is something similar to kernel
+module. When filter is loaded, it's initalized and added into linked list of
+filters. Filter gets some events and sends some events to the next filter (or
+back to the application, when end of the list is reached).  Linked list of
+filters can be created per device and devices can be merged together by
+_barrier_ filter.
+
+=== What is implemented so far? ===
+
+The code is mostly finished. Hotplug support is in progress. System-wide and
+app-defined profiles are finished and working. However the code is in alpha
+state, so testing is needed.
+
+=== What is profile? ===
+
+Profile is evfilter configuration. There are two types of profiles,
+system-wide profile located in _/etc/evfilter/profile/_ and application
+defined profiles.
+
+Profile consist of files. _Profilerc_ file, that defines matching
+rules and files to load, when rules are fulfilled. The rest of files
+defines lists of modules along with their parameters.
+
+For more see http:profile.html[detailed profile description].
+
+=== What is this good for? ===
+
+Well, that is good question. This library was created in order to standardized inteface for:
+
+* Touchscreen callibration and filters. (as tslib is old hack that doesn't play nice with event layer)
+
+* Console applications as gpm. (as gpm is even older hack that doesn't work either) And is not easy to rewrite gpm without such library.
+
+So far I have two plans with evfilter library. Rewrite gmp so that it's able
+to work with touchscreens and more. That goal is close to be finished, stay
+tuned ;). Second goal is to hack X-server input driver to use evfilter library
+so we can do much more magic with input devices in X-server.

@@ -1,0 +1,42 @@
+[
+  {
+    "type": "Key",
+    "code": "Key_Up",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_Up",
+    "value": 0
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_Down",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_Down",
+    "value": 0
+  },
+  {
+    "type": "Sync"
+  },
+  {
+    "type": "Key",
+    "code": "Key_A",
+    "value": 1
+  },
+  {
+    "type": "Sync"
+  }
+]

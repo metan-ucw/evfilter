@@ -1,0 +1,181 @@
+   ___ .   .   ___ . .   ____  ___  __
+  /    |  /  /    / /     /   /    /  /
+ ---   | /  /--  / /     /   ---  /--
+/___   |/  /    / /___  /   /___ /  |
+
+* http://metan.ucw.cz/evfilter/
+
+--------------------------------------
+
+Tests for evfilter library.
+
+How to build
+------------
+
+Type make. 
+
+Test named draw needs libsdl
+and libsdl-gfx to compile correclty.
+
+
+
+How to run tests in build root
+------------------------------
+
+These tests are dynamically linked
+against libevfilter. To run them
+in build root use run_test.sh script.
+
+
+
+How to test
+-----------
+
+* param_loader
+ 
+  Is testing parameter parsing engine
+  used for filter parameters. Just run 
+  and see the results. If you see 
+  following output it's working fine.
+
+  Invalid filter name ................................................... OK
+    Error message from libevfilter: Invalid filter name `xxx42xxx'.
+  No params at all ...................................................... OK
+    Error message from libevfilter: Parameter `prefix' is missing.
+  Invalid parameter name ................................................ OK
+    Error message from libevfilter: Invalid parameter `gugu'.
+  Missing parameter ..................................................... OK
+    Error message from libevfilter: Parameter `file' is missing.
+  Correct module load ................................................... OK
+
+
+* load_all
+
+  Tries to load all filters, tests
+  parameter parsing engine and parlty
+  filters implememntation.
+
+  If you see something similar to:
+
+  Dump               success
+  NoRepeat           success
+  PressureToKey      success
+  SpeedMod           success
+  Barrier            success
+  WeightedAverageAbs success
+  ScaleAbs           success
+  Mirror             success
+  Rotate             success
+  Abs2Rel            success
+  Btn2Rel            success
+
+  It's working fine.
+
+
+* select
+
+  Is testing select queue implementation.
+  You must add at least one /dev/input/eventX
+  device as parameters and have rights to read
+  from input devices (usualy that means to be 
+  root).
+
+  Then you should see events printed in human
+  readable format printed into stdout from
+  these devices.
+
+
+* hotplug
+
+  Is testing hotplug support. Run it as root
+  (as you need rights to watch /dev/input/ for
+  changes). Then plug and unplug input device
+  eg. usb mouse/keyboard etc...
+
+  Then you should see printed hotplug events.
+
+  Initalizing hotplug!
+  --> Device   plugged at: /dev/input/event5 (Asus EeePC extra buttons)
+  --> Device   plugged at: /dev/input/event6 (AT Translated Set 2 keyboard)
+  --> Device   plugged at: /dev/input/event8 (ImPS/2 Logitech Wheel Mouse)
+  --> Device   plugged at: /dev/input/event1 (Lid Switch)
+  --> Device   plugged at: /dev/input/event7 (HDA Digital PCBeep)
+  --> Device   plugged at: /dev/input/event2 (Sleep Button)
+  --> Device   plugged at: /dev/input/event4 (Video Bus)
+  --> Device   plugged at: /dev/input/event3 (Power Button)
+  --> Device   plugged at: /dev/input/event0 (Power Button)
+  --> Device   plugged at: /dev/input/event9 (Microsoft Basic Optical Mouse)
+  <-- Device unplugged at: /dev/input/event9
+  --> Device   plugged at: /dev/input/event9 (Microsoft Basic Optical Mouse)
+  <-- Device unplugged at: /dev/input/event9
+  ...
+
+
+* select_hotplug
+
+  Select and hotplug functionality. Prints all
+  events for all input devices plugged into
+  computer.
+
+  device /dev/input/event5 plugged.
+  device /dev/input/event6 plugged.
+  device /dev/input/event8 plugged.
+  device /dev/input/event1 plugged.
+  device /dev/input/event7 plugged.
+  device /dev/input/event2 plugged.
+  device /dev/input/event4 plugged.
+  device /dev/input/event3 plugged.
+  device /dev/input/event0 plugged.
+  select!
+  event from fd 5
+   *** ev->type:  EV_MSC    
+  event from fd 5
+   *** ev->type:  EV_KEY    
+   *** ev->code:  Key_Enter (28)
+   *** ev->value: KEY_UP     (0)
+  event from fd 5
+   *** ev->type:  EV_SYN    
+  ...  
+
+
+* input_line
+  
+  Loads input line for input device. In the 
+  process profile files are being read so don't
+  forget to create one. See ../etc/README for
+  details. The test takes path to one or more
+  /dev/input/eventX files and creates and prints
+  input line for them. Once more you need rights
+  to read /dev/input/eventX (usually to be root).
+  
+  Example of output follows:
+  
+  #./run_test.sh ./input_line /dev/input/event5
+  Opening /dev/input/event5 ... Ok
+  Filter line for input /dev/input/event5 (Asus EeePC extra buttons)
+   Dump->Btn2Rel->Dump->SpeedMod->Dump->Barrier->Commit
+
+  ********: ev->type:  EV_KEY    
+  ********: ev->code:  Key_Coffee (152)
+  ********: ev->value: KEY_DOWN   (1)
+
+  ****: ev->type:  EV_REL    
+  ****: ev->code:  REL_Y      (1)
+  ****: ev->value: -2
+
+  ********: ev->type:  EV_SYN    
+
+  ****: ev->type:  EV_SYN    
+
+  ********: ev->type:  EV_KEY    
+  ********: ev->code:  Key_Coffee (152)
+  ********: ev->value: KEY_UP     (0)
+
+  ********: ev->type:  EV_SYN    
+
+  
+* draw
+  
+  The same as input_line, but relative pointers
+  draws trail in sdl window.
+

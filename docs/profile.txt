@@ -1,0 +1,79 @@
+== Detailed profile description ==
+
+=== About profile ===
+
+Profile is a system wide evfilter configuration. This configuration is divided
+into two parts. First is a profile with set of rules that can match any
+specific input device on the system and filter configurations used to load
+filters if a match has occured.
+
+=== profilerc ===
+
+File */etc/evfilter/profilerc is a system wide evfilter configuration file.
+The file format consits of rules and filenames. The rules are used to match a
+specific device or a subset of devices and the filenames are pointing to a
+filters configurations.
+
+There are four types of match keywords that map to attributes listed in
+*/proc/bus/input/devices* and a *File*  keyword used to load filter
+configuration file(s).
+
+==== Matching keywords ====
+
+==== Device ====
+
+Path to the input device in */dev* filesystem. As a matter of fact minor and
+major number are compared.
+
+Don't use this unless you really know what you are doing. Paths in */dev*
+filesystem are dynamically allocated.
+
+==== Name ====
+
+Device name as it comes from the hardware. Usually something like
+*"ImPS/2 Logitech Wheel Mouse"* or *"AT Translated Set 2 keyboard"*
+
+==== Phys ====
+
+Identifies specific bus or a connector in the computer the device is connected to.
+
+==== Bits ====
+
+Identifies range of events that this device is able to generate. For example relative coordinates.
+
+TODO: this is not correctly implemented yet. :(
+
+==== File ====
+
+File with filter(s) to load when a rule was matched.
+
+The generall syntax of file consist of lines, every line begins with one the
+keywords followed by whitespace. The rest of the line till the newline
+character is value for that keyword.
+
+When any of rules before the first occurence of *File* keyword is fulfilled,
+this file is loaded and filters defined in this file are attached to the list
+of filters for this device.
+
+In the following example file mouse.evf will be loaded for mouse connected to
+the ps2 connector and file set_keys.evf either for AT Translated keyboards or
+for asus extra buttons.
+
+  Phys isa0060/serio1/input0
+  File mouse.json
+  Name AT Translated Set 2 keyboard
+  Name Asus EeePC extra buttons
+  File set_keys.json
+
+
+=== Filter configuration ===
+
+Filter configurations are stored in JSON.
+
+Following example says to load filter name *key_lock* for a key *Enter*.
+
+  {
+    "filter": "key_lock",
+    "key": "Key_Enter"
+  }
+

@@ -1,0 +1,152 @@
+   ___ .   .   ___ . .   ____  ___  __
+  /    |  /  /    / /     /   /    /  /
+ ---   | /  /--  / /     /   ---  /--
+/___   |/  /    / /___  /   /___ /  |
+
+* http://metan.ucw.cz/evfilter/
+
+--------------------------------------
+
+If you are looking for information how
+to create filter see ../doc/index.html
+or evfilter homepage.
+
+
+Quick description of filters and how to use them:
+
+barrier.c
+~~~~~~~~~
+
+ Parameters:
+
+ history = maximal number of saved events
+
+ Usage:
+
+ this filters is used to merge any number of
+ input devices by implementing bariers that hold
+ events until sync event and then flusing them all.
+
+commit.c
+~~~~~~~~
+
+ Parameters:
+
+ none
+
+ Usage:
+
+ This filter is interally used to commit filtered event
+ back to the application.
+
+dump.c
+~~~~~~
+
+ Parameters:
+
+ prefix = string that would be used as prefix for all messages
+
+ file   = file to print messages
+
+ This filter writes human readable decomposition of event into file
+ (or stdout or strerr).
+
+key_lock.c
+~~~~~~~~~~
+
+ Parameters:
+
+ Key = key to process
+
+ This filter is used to make the key appear to be pressed, until you press it
+ second time. Useful for multi keys combinations, when you are unable to hold
+ one key and press another.
+
+key_substitute.c
+~~~~~~~~~~~~~~~~
+
+ Currently broken.
+
+ This filter substitutes one key's events with same events of another key.
+
+ Parameters:
+
+ KeyFrom = key to be replaced
+
+ KeyTo = replacement key
+
+
+no_repeat.c
+~~~~~~~~~~~
+
+ Parameters:
+
+ none
+
+ This filter "eats" all repeat events.
+
+
+pressure_to_key.c
+~~~~~~~~~~~~~~~~~
+
+ Parameters:
+
+ treshold = treshold for pressure
+ key      = key to be generated
+
+ This filter generates key events from pressure events.
+
+scale_abs.c
+~~~~~~~~~~~
+
+ Parameters:
+
+ minx, maxx, miny, maxy, minp, maxp
+
+ From callibration data (minx, maxx....) compute real value and
+ then normalize it to be betwen 0 and INT_MAX.
+
+
+speed_mod_rel.c
+~~~~~~~~~~~~~~~
+
+ Parameters:
+
+ xmod, ymod
+
+ Change speed of relative pointer by xmod and ymod.
+
+
+weighted_average_abs.c
+~~~~~~~~~~~~~~~~~~~~~~
+
+ Parameters:
+
+ samples = number of samples to be used in history.
+
+ This filter does weighted average of x, y and pressure samples.
+
+mirror.c
+~~~~~~~~
+
+ Parameters:
+
+ MirrorAbsX = bool
+ MirrorRelX = bool
+ MirrorAbsY = bool
+ MirrorRelY = bool
+
+ This filter mirrors x and y for both relative and absolute events.
+
+ WARNING: If you are mirroring absolute events, scale_abs MUST be loaded
+          before this filter.
+
+rotate.c
+~~~~~~~~
+
+ Parameters:
+
+ RotateAbs = bool
+ RotateRel = bool
+
+ This filter exchanges x and y for both relative and absolute events.
