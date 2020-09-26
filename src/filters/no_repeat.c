@@ -21,10 +21,27 @@
 #include "evf_struct.h"
 #include "evf_msg.h"
 
+struct no_repeat {
+	int eat_next_sync;
+};
+
 static void no_repeat_process(struct evf_filter *self, struct input_event *ev)
 {
-	if (ev->type != EV_KEY || ev->value != 2)
-		evf_filter_process(self->next, ev);
+	struct no_repeat *priv = (void*)self->data;
+
+	if (priv->eat_next_sync) {
+		priv->eat_next_sync = 0;
+
+		if (ev->type == 0 && ev->code == 0 && ev->value == 0)
+			return;
+	}
+
+	if (ev->type == EV_KEY && ev->value == 2) {
+		priv->eat_next_sync = 1;
+		return;
+	}
+
+	evf_filter_process(self->next, ev);
 }
 
 static struct evf_filter *no_repeat_from_json(json_object *json_data)
@@ -46,11 +63,16 @@ struct evf_filter_ops evf_no_repeat_ops = {
 
 struct evf_filter *evf_no_repeat_alloc(void)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter));
+	struct evf_filter *evf = malloc(sizeof(struct evf_filter) +
+	                                sizeof(struct no_repeat));
+	struct no_repeat *priv;
 
 	if (!evf)
 		return NULL;
 
+	priv = (void*)evf->data;
+
+	priv->eat_next_sync = 0;
 	evf->ops = &evf_no_repeat_ops;
 
 	return evf;
