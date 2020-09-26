@@ -90,12 +90,6 @@ static void modify(struct evf_filter *self, struct input_event *ev)
 	evf_filter_process(self->next, ev);
 }
 
-static void status(struct evf_filter *self, char *buf, int len)
-{
-	struct average *average = (struct average*) self->data;
-	snprintf(buf, len, "weighted_average_abs of last %i values", average->n);
-}
-
 struct evf_filter *evf_weighted_average_abs_alloc(unsigned int n)
 {
 	struct evf_filter *filter = malloc(sizeof(struct evf_filter) + sizeof(struct average) + sizeof(int) * 3 * n);

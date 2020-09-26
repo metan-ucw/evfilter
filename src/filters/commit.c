@@ -16,8 +16,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 
 struct commit {
 	void (*commit)(struct input_event*, void *data);
@@ -42,16 +41,11 @@ static struct evf_filter_ops evf_commit_ops = {
 
 struct evf_filter *evf_commit_alloc(void (*commit)(struct input_event*, void *data), void *data)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter) +
-	                                   sizeof(struct commit));
+	struct evf_filter *filter = evf_filter_alloc("commit", sizeof(struct commit));
 	struct commit *tmp;
 
-	evf_msg(EVF_DEBUG, "Creating commit filter");
-
-	if (!filter) {
-		evf_msg(EVF_ERR, "Allocating error");
+	if (!filter)
 		return NULL;
-	}
 
 	filter->ops = &evf_commit_ops;
 

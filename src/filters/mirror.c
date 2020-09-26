@@ -23,8 +23,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct mirror {
@@ -84,8 +83,7 @@ struct evf_filter_ops evf_mirror_ops = {
 
 struct evf_filter *evf_mirror_alloc(int mirror_x, int mirror_y)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter) +
-	                                   sizeof(struct mirror));
+	struct evf_filter *filter = evf_filter_alloc("mirror", sizeof(struct mirror));
 	struct mirror *tmp;
 
 	if (!filter)

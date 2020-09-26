@@ -21,9 +21,8 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "filters/filters.h"
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filters.h"
+#include "filter.h"
 
 #define INCIF(x) ((x) < 2 ? ((x)++) : (x));
 
@@ -101,18 +100,12 @@ struct evf_filter_ops evf_abs2rel_ops = {
 
 struct evf_filter *evf_abs2rel_alloc(void)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct abs2rel));
-	struct abs2rel *data;
+	struct evf_filter *filter = evf_filter_alloc("abs2rel", sizeof(struct abs2rel));
 
-	if (!evf)
+	if (!filter)
 		return NULL;
 
-	evf->ops = &evf_abs2rel_ops;
+	filter->ops = &evf_abs2rel_ops;
 
-	data = (struct abs2rel*)evf->data;
-
-	data->xstate = 0;
-	data->ystate = 0;
-
-	return evf;
+	return filter;
 }

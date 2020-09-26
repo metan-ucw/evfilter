@@ -22,9 +22,8 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
 #include "evf_pipe.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct priv {
@@ -105,8 +104,7 @@ struct evf_filter_ops evf_filter_to_pipe_ops = {
 
 struct evf_filter *evf_filter_to_pipe_alloc(const char *name, int type, int code)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter)
-	                                   + sizeof(struct priv));
+	struct evf_filter *filter = evf_filter_alloc("filter_to_pipe", sizeof(struct priv));
 	struct priv *priv;
 
 	if (!filter)

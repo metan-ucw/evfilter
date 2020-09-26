@@ -15,8 +15,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct barrier {
@@ -89,22 +88,19 @@ struct evf_filter_ops evf_barrier_ops = {
 
 struct evf_filter *evf_barrier_alloc(unsigned int buffer_size)
 {
-	struct evf_filter *evf = malloc(sizeof(struct evf_filter) + sizeof(struct barrier)
-	                                + buffer_size * sizeof(struct input_event));
+	struct evf_filter *filter;
 	struct barrier *tmp;
 
-	evf_msg(EVF_DEBUG, "Creating barrier filter");
+	filter = evf_filter_alloc("barrier", sizeof(struct barrier)
+	                          + buffer_size * sizeof(struct input_event));
 
-	if (!evf)
+	if (!filter)
 		return NULL;
 
-	evf->ops = &evf_barrier_ops;
+	filter->ops = &evf_barrier_ops;
 
-	tmp = (struct barrier*) evf->data;
+	tmp = (struct barrier*) filter->data;
 	tmp->queue_size = buffer_size;
-	tmp->queue_index = 0;
 
-	evf_msg(EVF_DEBUG, "Barrier filter created");
-
-	return evf;
+	return filter;
 }

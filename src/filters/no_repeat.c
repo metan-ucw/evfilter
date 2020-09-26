@@ -17,9 +17,8 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "filters/filters.h"
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
+#include "filters.h"
 
 struct no_repeat {
 	int eat_next_sync;
@@ -63,17 +62,17 @@ struct evf_filter_ops evf_no_repeat_ops = {
 
 struct evf_filter *evf_no_repeat_alloc(void)
 {
-	struct evf_filter *evf = malloc(sizeof(struct evf_filter) +
-	                                sizeof(struct no_repeat));
+	struct evf_filter *filter = evf_filter_alloc("no_repeat", sizeof(struct no_repeat));
 	struct no_repeat *priv;
 
-	if (!evf)
+	if (!filter)
 		return NULL;
 
-	priv = (void*)evf->data;
+	filter->ops = &evf_no_repeat_ops;
+
+	priv = (void*)filter->data;
 
 	priv->eat_next_sync = 0;
-	evf->ops = &evf_no_repeat_ops;
 
-	return evf;
+	return filter;
 }

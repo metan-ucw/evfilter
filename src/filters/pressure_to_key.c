@@ -24,9 +24,9 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+
 #include "key_parser.h"
+#include "filter.h"
 #include "filters.h"
 
 struct pressure {
@@ -118,7 +118,7 @@ struct evf_filter_ops evf_pressure_to_key_ops = {
 
 struct evf_filter *evf_pressure_to_key_alloc(int treshold, int key)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter) + sizeof(struct pressure));
+	struct evf_filter *filter = evf_filter_alloc("pressure_to_key", sizeof(struct pressure));
 	struct pressure *priv;
 
 	if (!filter)

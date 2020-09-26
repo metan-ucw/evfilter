@@ -22,8 +22,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct rotate {
@@ -92,8 +91,7 @@ struct evf_filter_ops evf_rotate_ops = {
 
 struct evf_filter *evf_rotate_alloc(int rotate_abs_coords, int rotate_rel_coords)
 {
-	struct evf_filter *self = malloc(sizeof(struct evf_filter) +
-	                                 sizeof(struct rotate));
+	struct evf_filter *self = evf_filter_alloc("rotate", sizeof(struct rotate));
 	struct rotate *priv;
 
 	if (!self)

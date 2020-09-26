@@ -20,9 +20,8 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
 #include "key_parser.h"
+#include "filter.h"
 #include "filters.h"
 
 struct rel2scroll {
@@ -135,9 +134,10 @@ struct evf_filter_ops evf_rel2scroll_ops = {
 
 struct evf_filter *evf_rel2scroll_alloc(int trigger_btn, int xmod, int ymod)
 {
-	struct evf_filter *filter = malloc(sizeof (struct evf_filter) +
-	                                   sizeof (struct rel2scroll));
+	struct evf_filter *filter;
 	struct rel2scroll *priv;
+
+	filter = evf_filter_alloc("rel2scroll", sizeof(struct rel2scroll));
 
 	if (!filter)
 		return NULL;

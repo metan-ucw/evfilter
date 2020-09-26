@@ -9,9 +9,8 @@
 #include <linux/input.h>
 #include <stdint.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
 #include "key_parser.h"
+#include "filter.h"
 #include "filters.h"
 
 struct bit_map {
@@ -159,11 +158,13 @@ struct evf_filter_ops evf_key_map_ops = {
 
 struct evf_filter *evf_key_map_alloc(int key_from[], int key_to[], unsigned int key_cnt)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter) +
-	                                   sizeof(struct priv) +
-	                                   key_cnt * sizeof(struct key));
+	struct evf_filter *filter;
 	struct priv *priv;
 	unsigned int i;
+
+	filter = evf_filter_alloc("key_map",
+	                          sizeof(struct priv) +
+	                          key_cnt * sizeof(struct key));
 
 	if (!filter)
 		return NULL;

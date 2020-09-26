@@ -23,9 +23,8 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
 #include "evf_input.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct dump {
@@ -46,7 +45,7 @@ static void dump_process(struct evf_filter *self, struct input_event *ev)
 static struct evf_filter *dump_from_json(json_object *json_data)
 {
 	FILE *f = NULL;
-	const char *fname;
+	const char *fname = NULL;
 	const char *prefix = "";
 
 	json_object_object_foreach(json_data, key, val) {
@@ -89,18 +88,21 @@ struct evf_filter_ops evf_dump_ops = {
 
 struct evf_filter *evf_dump_alloc(const char *prefix, FILE *f)
 {
-	struct evf_filter *evf = malloc(sizeof(struct evf_filter) + sizeof(struct dump) + strlen(prefix) + 1);
+	struct evf_filter *filter;
 	struct dump *tmp;
 
-	if (!evf)
+	filter = evf_filter_alloc("dump", sizeof(struct evf_filter) + sizeof(struct dump) + strlen(prefix) + 1);
+
+	if (!filter)
 		return NULL;
 
-	tmp = (struct dump*)evf->data;
+	filter->ops = &evf_dump_ops;
+
+	tmp = (struct dump*)filter->data;
 
 	strcpy(tmp->prefix, prefix);
 
 	tmp->f = f;
-	evf->ops = &evf_dump_ops;
 
-	return evf;
+	return filter;
 }

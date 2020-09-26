@@ -13,8 +13,7 @@
 #include <errno.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 enum layout {
@@ -326,8 +325,7 @@ struct evf_filter_ops evf_half_qwerty_ops = {
 
 struct evf_filter *evf_half_qwerty_alloc(void)
 {
-	struct evf_filter *self = malloc(sizeof(struct evf_filter) +
-	                                 sizeof(struct half_qwerty));
+	struct evf_filter *self = evf_filter_alloc("half_qwerty", sizeof(struct half_qwerty));
 	struct half_qwerty *priv;
 
 	if (!self)

@@ -9,9 +9,8 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
 #include "key_parser.h"
+#include "filter.h"
 #include "filters.h"
 
 struct priv {
@@ -85,20 +84,19 @@ struct evf_filter_ops evf_key_lock_ops = {
 
 struct evf_filter *evf_key_lock_alloc(int key)
 {
-	struct evf_filter *evf = malloc(sizeof(struct evf_filter)
-	                                + sizeof(struct priv));
+	struct evf_filter *filter = evf_filter_alloc("key_lock", sizeof(struct priv));
 	struct priv *priv;
 
-	if (!evf)
+	if (!filter)
 		return NULL;
 
-	evf->ops = &evf_key_lock_ops;
+	filter->ops = &evf_key_lock_ops;
 
-	priv = (struct priv*) evf->data;
+	priv = (struct priv*)filter->data;
 
 	priv->key = key;
 	priv->state = 0;
 	priv->eat_next_sync = 0;
 
-	return evf;
+	return filter;
 }

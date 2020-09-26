@@ -9,9 +9,8 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
 #include "key_parser.h"
+#include "filter.h"
 #include "filters.h"
 
 struct btn2rel {
@@ -158,8 +157,7 @@ struct evf_filter_ops evf_btn2rel_ops = {
 
 struct evf_filter *evf_btn2rel_alloc(int key_down, int key_up, int key_left, int key_right, int left_btn, int middle_btn, int right_btn)
 {
-	struct evf_filter *filter = malloc(sizeof(struct evf_filter) +
-	                                   sizeof(struct btn2rel));
+	struct evf_filter *filter = evf_filter_alloc("btn2rel", sizeof(struct btn2rel));
 	struct btn2rel *priv;
 
 	if (!filter)

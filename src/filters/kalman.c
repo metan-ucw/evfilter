@@ -19,8 +19,7 @@
 #include <string.h>
 #include <linux/input.h>
 
-#include "evf_struct.h"
-#include "evf_msg.h"
+#include "filter.h"
 #include "filters.h"
 
 struct kalman {
@@ -107,13 +106,13 @@ struct evf_filter_ops evf_kalman_ops = {
 
 struct evf_filter *evf_kalman_alloc(float gain_x, float gain_y)
 {
-	struct evf_filter *evf = malloc(sizeof (struct evf_filter) + sizeof (struct kalman));
+	struct evf_filter *filter = evf_filter_alloc("kalman", sizeof(struct kalman));
 	struct kalman *kalman;
 
-	if (!evf)
+	if (!filter)
 		return NULL;
 
-	kalman = (struct kalman*)evf->data;
+	kalman = (struct kalman*)filter->data;
 
 	kalman->kx = gain_x;
 	kalman->ky = gain_y;
@@ -122,7 +121,7 @@ struct evf_filter *evf_kalman_alloc(float gain_x, float gain_y)
 	kalman->reset_x = 1;
 	kalman->reset_y = 1;
 
-	evf->ops = &evf_kalman_ops;
+	filter->ops = &evf_kalman_ops;
 
-	return evf;
+	return filter;
 }
