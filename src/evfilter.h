@@ -47,4 +47,6 @@
 /* Linux user input interface */
 #include "evf_uinput.h"
 
+#include "evf_io_queue.h"
+
 #endif /* EVFILTER_H__ */

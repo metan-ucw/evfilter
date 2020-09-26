@@ -1,10 +1,10 @@
 TOPDIR=../../
 
 BINARIES=evfd
-CSOURCES=evfd.c evfd_lock.c evf_io_queue.c
+CSOURCES=evfd.c evfd_lock.c
 INSTALL_BINARIES=evfd
 
-evfd: evfd.o evfd_lock.o evf_io_queue.o
+evfd: evfd.o evfd_lock.o
 
 include $(TOPDIR)/common.mk
 

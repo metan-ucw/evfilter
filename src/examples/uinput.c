@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <errno.h>
 #include "evf_uinput.h"
 
 static int sig_flag = 1;
@@ -27,8 +28,8 @@ static void sighandler(int sig __attribute__ ((unused)))
 static void pack_event(struct input_event *ev, int type, int code, int value)
 {
 	gettimeofday(&ev->time, NULL);
-	ev->type  = type;
-	ev->code  = code;
+	ev->type = type;
+	ev->code = code;
 	ev->value = value;
 }
 
@@ -44,7 +45,8 @@ int main(void)
 	fd = evf_uinput_create(&dev);
 
 	if (fd < 0) {
-		fprintf(stderr, "Failed to create uinput %i\n", fd);
+		fprintf(stderr,
+			"Failed to create uinput: %s\n", strerror(errno));
 		return 1;
 	}
 
