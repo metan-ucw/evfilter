@@ -1,19 +1,25 @@
-# compilers and tools
-CC=gcc
-CFLAGS=-Wall -W -ggdb -I.. -L.. -levfilter
+TOPDIR=../../
 
-BINARIES=draw hotplug hotplug pointer_test uinput
+CSOURCES=uinput.c #hotplug.c
+BINARIES=uinput# hotplug
 
-all: $(BINARIES)
+include $(TOPDIR)/config.mk
 
-draw: draw.c sdl_utils.c sdl_utils.h
-	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx -lSDL draw.c sdl_utils.c -o draw
+ifeq ($(HAVE_LIBSDL),yes)
+CSOURCES += sdl_utils.c pointer_test.c draw.c
+BINARIES += pointer_test draw
+endif
 
-pointer_test: pointer_test.c
-	$(CC) $(CFLAGS) `sdl-config --static-libs --cflags` -lSDL_gfx -lSDL pointer_test.c -o pointer_test
+include $(TOPDIR)/common.mk
 
-%: %.c
-	$(CC) $(CFLAGS) $< -o $@
+LDFLAGS+=-L../
+LDLIBS+=-levfilter
+CFLAGS+=-I../
 
-clean:
-	rm -rf $(BINARIES)
+ifeq ($(HAVE_LIBSDL),yes)
+draw: CFLAGS += $(shell sdl-config --static-libs --cflags)
+pointer_test: CFLAGS += $(shell sdl-config --static-libs --cflags)
+draw: LDLIBS += -lSDL_gfx -lSDL
+draw: sdl_utils.o
+pointer_test: LDLIBS += -lSDL_gfx -lSDL
+endif

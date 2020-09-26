@@ -1,12 +1,8 @@
-all:
-	make -C src
+all: subdirs
+clean: subdirs
+install: subdirs
 
-clean:
-	make -C src clean
+.PHONY: subdirs
 
-install:
-	make -C src install
-
-tar:
-	make clean
-	cd .. && tar czf libevfilter.tgz libevfilter/
+subdirs:
+	@$(MAKE) --no-print-directory -C src $(MAKECMDGOALS)

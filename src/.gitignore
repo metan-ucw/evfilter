@@ -1,2 +1,5 @@
 *.o
+*.dep
 libevfilter.so
+libevfilter.so.0
+libevfilter.so.0.0

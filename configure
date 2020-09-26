@@ -1,0 +1,412 @@
+#!/usr/bin/env python
+#
+# This is simple script to detect libraries and configure standard features.
+#
+import os
+import sys
+from optparse import OptionParser
+import subprocess
+
+include_search_paths = []
+
+def get_default_include_paths(cfg):
+    out = os.popen("%s -v -x c -E /dev/null 2>&1" % cfg['CC'][0], 'r', 1)
+    add = False
+    paths = []
+    for line in out.readlines():
+        if (line == "#include <...> search starts here:\n"):
+            add = True
+            continue
+
+        if (line == "End of search list.\n"):
+            add = False
+
+        if (add):
+            paths.append(line.rstrip().lstrip())
+
+    return paths
+
+def header_exists(cfg, *filenames):
+    for filename in filenames:
+        sys.stderr.write("Checking for '%s' ... " % filename)
+        for include_path in include_search_paths:
+            fpath =  include_path + '/' + filename
+            try:
+                st = os.stat(fpath)
+                sys.stderr.write("Yes\n")
+                sys.stderr.write(" (%s)\n\n" % fpath)
+                return True
+            except os.error:
+                pass
+
+        sys.stderr.write("No\n\n")
+
+    return False
+
+def headers_exists(cfg, *filenames):
+    for filename in filenames:
+        if not header_exists(cfg, filename):
+            return False
+    return True
+
+def c_try_compile(cfg, code, msg, cflags=""):
+    sys.stderr.write(msg)
+
+    ret = os.system("echo '%s' | %s %s -x c -o /dev/null - > /dev/null 2>&1" %
+                    (code, cfg['CC'][0], cfg['CFLAGS'][0]) + ' ' + cflags)
+
+    if ret:
+        sys.stderr.write("No\n")
+        return False
+    else:
+        sys.stderr.write("Yes\n")
+        return True
+
+def c_compiler_exists(cfg):
+    return c_try_compile(cfg, "int main(void) { return 0; }",
+                         "Checking for working compiler (%s) ... " %
+                         cfg["CC"][0])
+
+def define_fortify_source(cfg):
+    return c_try_compile(cfg, "int main(void) {\n" +
+                              "#if !defined _FORTIFY_SOURCE &&" +
+                              "defined __OPTIMIZE__ && __OPTIMIZE__\n" +
+                              "        return 0;\n" +
+                              "#else\n" +
+                              " #error FORTIFY_SOURCE not usable\n" +
+                              "#endif\n" +
+                              "}", "Whether to define _FORTIFY_SOURCE ... ");
+
+def check_for_cflags(cfg, cflags):
+    return c_try_compile(cfg, "int main(void) { return 0; }",
+                         "Checking for %s ... " % cflags, cflags)
+
+#
+# Adds prefix to *dir vars but only if the path does not start with '/'
+#
+def cfg_get_value(cfg_key):
+    if (cfg_key.endswith('dir')):
+        value = cfg[cfg_key][0]
+        if (value.startswith('/')):
+            return value
+        else:
+            prefix = cfg['prefix'][0]
+            if (prefix.endswith('/')):
+                return prefix + value
+            else:
+                return prefix + '/' + value
+    else:
+        return cfg[cfg_key][0]
+
+#
+# Library checking api
+#
+class libraries:
+    def __init__(self, libraries, cfg):
+        self.libraries = libraries
+        self.cfg = cfg;
+        # Create dictionary for check results
+        self.results = dict()
+    #
+    # Print summary
+    #
+    def print_summary(self):
+        sys.stderr.write("Settings and variables\n")
+        sys.stderr.write("----------------------\n")
+
+        for i in cfg:
+            value = cfg_get_value(i)
+            sys.stderr.write("%16s : '%s'\n" % (i, value))
+            sys.stderr.write("                  - %s\n\n" % cfg[i][1])
+
+        sys.stderr.write("Libraries to link against\n")
+        sys.stderr.write("-------------------------\n")
+
+        for i in self.libraries:
+            sys.stderr.write("%16s" % i[0])
+
+            if (self.results[i[0]]):
+                sys.stderr.write(" : Enabled\n")
+            else:
+                sys.stderr.write(" : Disabled\n")
+
+            sys.stderr.write("                  - %s\n\n" % i[1])
+    #
+    # Enable/Disable library
+    #
+    def set(self, name, val):
+        if name not in map(lambda s: s[0], self.libraries):
+            sys.stderr.write("ERROR: Invalid library '%s'\n" % name)
+            exit(1)
+        else:
+            self.results[name] = val
+    #
+    # Calls a function on arguments, all is stored in array if
+    # not set previously
+    # (I know this smells like a lisp, but I can't help myself)
+    #
+    def check(self):
+        sys.stderr.write("Checking for libraries\n")
+        sys.stderr.write("----------------------\n")
+        for i in self.libraries:
+            if i[0] not in self.results:
+                self.results[i[0]] = i[2][0](self.cfg, *i[2][1:])
+
+                # Resolve dynamic CFLAGS && LDFLAGS
+                if self.results[i[0]]:
+                    if hasattr(i[3], '__call__'):
+                        i[3] = i[3]()
+                    if hasattr(i[4], '__call__'):
+                        i[4] = i[4]()
+        sys.stderr.write("\n")
+    #
+    # Writes '#define HAVE_XXX_H' into passed file
+    #
+    def write_config_h(self, f):
+        for i in self.libraries:
+            f.write("/*\n * %s\n */\n" % i[1])
+            s=i[0].upper().replace("-", "_")
+            if self.results[i[0]]:
+                f.write("#define HAVE_%s\n" % s)
+            else:
+                f.write("//#define HAVE_%s\n" % s)
+            f.write("\n")
+
+    #
+    # Writes LDLIBS and CFLAGS into passed file
+    #
+    def write_config_mk(self, f):
+        for i in self.libraries:
+            f.write("# %s - %s\n" % (i[0], i[1]))
+            if self.results[i[0]]:
+                f.write("HAVE_%s=yes\n" % i[0].upper())
+            else:
+                f.write("HAVE_%s=no\n" % i[0].upper())
+
+        # Write library specific CFLAGS
+        for i in self.libraries:
+            if self.results[i[0]]:
+                if i[3]:
+                    f.write("# %s cflags\n" % i[0])
+                    f.write("%s_CFLAGS=%s\n" % (i[0].upper(), i[3]))
+
+        # Write all libraries the library should link with
+        for module in self.get_modules():
+            f.write("# %s linker flags\n" % (module))
+            f.write("LDLIBS_%s=" % (module))
+            f.write("%s\n" % self.get_linker_flags(module))
+    #
+    # Return list of linker flags needed to build particular module
+    # (module may be core, loaders, backends, etc...
+    #
+    def get_linker_flags(self, module):
+        res = ''
+        for i in self.libraries:
+            if module in i[5] and self.results[i[0]]:
+                if i[4] == '':
+                    continue;
+                if res != '':
+                    res += ' '
+                res += i[4]
+        return res
+    #
+    # Returns list of cflags needed to build module
+    #
+    def get_cflags(self, module):
+        res = ''
+        for i in self.libraries:
+            if module in i[5] and self.results[i[0]]:
+                res += ' ' + i[3]
+        return res
+
+    #
+    # Builds a list of GFXprim libraries that may need to be linked against
+    # third party libs
+    #
+    def get_modules(self):
+        modules = {}
+        for i in self.libraries:
+            for module in i[5]:
+                modules[module] = True
+        return modules.keys()
+
+    #
+    # Make sure that required libraries are present
+    #
+    def check_required(self, libs):
+        for i in libs:
+            if not self.results[i]:
+                die_screaming("Missing required library %s" % (i))
+
+def die_screaming(msg):
+    sys.stderr.write("\n************************************\n")
+    sys.stderr.write("ERROR: ")
+    sys.stderr.write(msg)
+    sys.stderr.write("\n************************************\n")
+    exit(1)
+
+#
+# Check for basic compiling tools
+#
+def basic_checks(cfg):
+    sys.stderr.write("Basic checks\n")
+    sys.stderr.write("------------\n")
+
+    if not c_compiler_exists(cfg):
+        die_screaming("No C compiler found")
+
+    sys.stderr.write("\nInclude search paths\n");
+    sys.stderr.write("--------------------\n");
+
+    global include_search_paths
+
+
+    if (cfg['include_path'][0]):
+        include_search_paths.append(cfg['include_path'][0])
+    else:
+        include_search_paths = get_default_include_paths(cfg)
+
+    for path in include_search_paths:
+        sys.stderr.write(' "' + path + '"\n');
+    sys.stderr.write("\n");
+
+    if define_fortify_source(cfg):
+        cfg['CFLAGS'][0] = cfg['CFLAGS'][0] + " -D_FORTIFY_SOURCE=2"
+
+    if cfg['libdir'][0] == '':
+        sys.stderr.write("Checking for lib directory ... ")
+
+        if os.path.isdir('/usr/lib64'):
+            cfg['libdir'][0] = 'lib64'
+        else:
+            cfg['libdir'][0] = 'lib'
+
+        sys.stderr.write(cfg['libdir'][0] + '\n');
+
+    sys.stderr.write('\n')
+
+#
+# Write configuration files
+#
+def write_config_h(cfg, libs):
+    f = open("config.h", "w")
+    f.write("/*\n * This file is genereated by configure script\n */\n");
+    f.write("#ifndef CONFIG_H\n#define CONFIG_H\n\n")
+    libs.write_config_h(f);
+    f.write("#endif /* CONFIG_H */\n");
+    sys.stderr.write("Config 'config.h' written\n")
+    f.close()
+
+def write_config_mk(cfg, libs):
+    f = open('config.mk', 'w')
+
+    for i in cfg:
+        f.write("# %s\n%s=%s\n" % (cfg[i][1], i, cfg_get_value(i)))
+
+    libs.write_config_mk(f);
+    f.close()
+    sys.stderr.write("Config 'config.mk' written\n")
+
+def cfg_parse_args(cfg, args):
+    for i in args:
+        par = i.split('=');
+        if (len(par) != 2):
+             die_screaming('Invalid argument %s' % i)
+
+        if (par[0] not in cfg):
+            die_screaming('Invalid config key %s' % i)
+
+        cfg[par[0]][0] = par[1]
+
+def cmd_output(cmds):
+    for cmd in cmds:
+        line = os.popen(cmd, 'r', 1).readline()
+
+        if (line):
+            return line.rstrip()
+
+    return None
+
+if __name__ ==  '__main__':
+    #
+    # Dictionary for default configuration parameters
+    #
+    cfg = {'CC'            : ['gcc', 'Path/name of the C compiler'],
+           'CFLAGS'        : ['-W -Wall -Wextra -O2 -ggdb', 'C compiler flags'],
+           'LDFLAGS'       : ['', 'Linker flags'],
+           'include_path'  : ['', 'Path to the system headers'],
+           'prefix'        : ['/usr/local/', 'Installation prefix'],
+           'bindir'        : ['bin', 'Where to install binaries'],
+           'libdir'        : ['', 'Where to install libraries'],
+           'includedir'    : ['include', 'Where to install headers'],
+           'mandir'        : ['share/man', 'Where to install man pages'],
+           'docdir'        : ['share/doc/', 'Where to install documentation'],
+           # Here comes autoconf compatibility cruft, not used for anything yet
+           'infodir'       : ['share/info', 'Where to install info pages'],
+           'datadir'       : ['share', 'Where to place readonly arch independend datafiles'],
+           'sysconfdir'    : ['etc', 'Where to place configuration'],
+           'localstatedir' : ['local/var/', 'Where to place runtime modified datafiles'],
+           'build'         : ['', 'WARNING not used'],
+           'host'          : ['', 'WARNING not used'],
+    }
+
+    #
+    # Library detection/enable disable
+    #
+    # name, description, [detection], cflags, ldflags, list of modules library is needed for
+    #
+    l = libraries([["libsdl",
+                    "Simple Direct Media Layer",
+                    [header_exists, "SDL/SDL.h"], "", "`sdl-config --libs`", []],
+                   ["json-c",
+                    "A JSON implementation in C",
+                    [header_exists, "json-c/json.h"], "", "-ljson-c", []],
+                   ], cfg)
+
+    parser = OptionParser();
+
+    # Get configuration parameters from environment variables
+    for i in cfg:
+        if i in os.environ:
+            cfg[i][0] = os.environ[i]
+
+    # Enable disable libraries for linking
+    parser.add_option("-e", "--enable", dest="enable", action="append",
+                      help="force enable library linking", metavar="libfoo")
+    parser.add_option("-d", "--disable", dest="disable", action="append",
+                      help="disable library linking", metavar="libfoo")
+
+    # Add cfg config options
+    for i in cfg:
+        parser.add_option("", "--"+i, dest=i, metavar=cfg[i][0], help=cfg[i][1])
+
+    (options, args) = parser.parse_args();
+
+    #
+    # Enable/Disable libraries as user requested
+    # These are not checked later
+    #
+    if options.enable:
+        for i in options.enable:
+            l.set(i, True);
+    if options.disable:
+        for i in options.disable:
+            l.set(i, False);
+
+    for i in cfg:
+        if getattr(options, i) is not None:
+            cfg[i][0] = getattr(options, i)
+
+    #
+    # Handle args such as CC=gcc passed after options
+    #
+    cfg_parse_args(cfg, args)
+
+    basic_checks(cfg);
+
+    l.check()
+    l.check_required(["json-c"]);
+    l.print_summary()
+
+    write_config_h(cfg, l)
+    write_config_mk(cfg, l)

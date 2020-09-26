@@ -1,30 +1,16 @@
-# compilers and tools
-CC=gcc
-CCFLAGS=-fPIC -Wall -W -ggdb -O -DDEBUG
+TOPDIR=../../
 
-# source files
 CSOURCES=evf_getkey.c key_parser.c
 HEADERS=$(shell ls ./*.h)
+BINARIES=evf-getkey
+INSTALL_BINARIES=evf-getkey
 
-# object files
-OBJECTS=$(CSOURCES:.c=.o) 
-
-all: evf-getkey
-
+#TODO: rebuild keys.h?
 evf-getkey: key_parser.o evf_getkey.o
-	$(CC) key_parser.o evf_getkey.o -o evf-getkey
+
+include $(TOPDIR)/common.mk
+
+CFLAGS+=-fPIC -DDEBUG
 
 keys.h: keyparser.in do_parser.sh
 	./do_parser.sh > keys.h
-
-# rulez for compiling c sources
-.c.o:
-	$(CC) $(CCFLAGS) -c $< -o $@
-
-# clean!
-clean:
-	rm -rf $(OBJECTS) evf-getkey
-
-# dependencies
-evf_getkey.o: evf_getkey.c key_parser.h
-key_parser.o: key_parser.c key_parser.h keys.h

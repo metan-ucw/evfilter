@@ -1,26 +1,13 @@
-# compilers and tools
-CC=gcc
-CFLAGS=-W -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -ggdb -I.. -L.. -levfilter
+TOPDIR=../../
 
-BINARY=evfd
+BINARIES=evfd
+CSOURCES=evfd.c evfd_lock.c evf_io_queue.c
+INSTALL_BINARIES=evfd
 
-$(BINARY): evfd.o evfd_lock.o evf_io_queue.o
+evfd: evfd.o evfd_lock.o evf_io_queue.o
 
-all: $(BINARY)
+include $(TOPDIR)/common.mk
 
-%: %.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-%: %.c
-	$(CC) $(CFLAGS) $< -o $@
-
-install:
-	install -d $(RPM_BUILD_ROOT)/usr/sbin
-	install -m 775 $(BINARY) $(RPM_BUILD_ROOT)/usr/sbin/
-
-clean:
-	rm -rf $(BINARY) *.o
-
-evfd_lock.o: evfd_lock.c evfd_lock.h
-evfd.o: evfd.c evfd_lock.h evfd.h
-evfd_lock.o: evfd_lock.c evfd_lock.h
+CFLAGS+=-I..
+LDFLAGS+=-L..
+LDLIBS+=-levfilter

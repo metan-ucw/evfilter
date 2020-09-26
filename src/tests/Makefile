@@ -1,15 +1,17 @@
-# compilers and tools
-CC=gcc
-CFLAGS=-Wall -W -ggdb -I.. -L.. -levfilter -ljson-c
+TOPDIR=../../
 
+CSOURCES=test.c
 BINARIES=test
+TARGETS=run_tests
 
-all: $(BINARIES)
+include $(TOPDIR)/common.mk
+
+test: test.o
+
+CFLAGS+=-I../
+LDFLAGS+=-L../
+LDLIBS+=-levfilter -ljson-c
+
+run_tests: test
 	@./run_test.sh
-
-%: %.c
-	$(CC) $(CFLAGS) $< -o $@
-
-clean:
-	rm -rf $(BINARIES)
 
