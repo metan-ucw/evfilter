@@ -61,6 +61,6 @@ Destroys userspace input device.
 
 [source,c]
 -------------------------------------------------------------------------------
-include::../../src/examples/uinput.c[]
+include::../src/examples/uinput.c[]
 -------------------------------------------------------------------------------
 .uinput example
